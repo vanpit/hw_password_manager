@@ -8,6 +8,10 @@
 #ifndef INC_DATABASE_H_
 #define INC_DATABASE_H_
 
+#define NUMBER_OF_SLOTS 34				// Number of password slots
+
+#define DATABASE_SIGNATURE_SIZE_IN_32_T 1
+
 #define PM_DATABASE_MODE_MAIN 0x01
 #define PM_DATABASE_MODE_BACKUP 0x02
 

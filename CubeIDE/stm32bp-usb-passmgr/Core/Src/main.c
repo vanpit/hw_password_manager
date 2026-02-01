@@ -76,7 +76,6 @@
 #define KEYPRESS_EVERY_N_CYCLES 8		// Keypress every n cycles
 #define KEYPRESS_RELEASE_AFTER_CYCLES 2	// Keypress every n cycles
 
-#define NUMBER_OF_SLOTS 34				// Number of password slots
 #define NUMBER_OF_LCD_LINES 4
 
 #define TYPE_SEQUENCE_OFF -1			// Disable typing sequence
