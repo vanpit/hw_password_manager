@@ -1001,6 +1001,8 @@ void randomizePassword(char *passwordBuffer, int length) {
     for (int i = 0; i < length; i++) {
         passwordBuffer[i] = alphabet[rand_unbiased(alpha_len)];
     }
+
+    if (length < 25) passwordBuffer[length] = 0x00;
 }
 
 /* USER CODE END 0 */
