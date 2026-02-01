@@ -48,7 +48,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define VERSION_STRING "1.04"
+#define VERSION_STRING "1.05"
 
 #define BTN_PRESSED GPIO_PIN_RESET		// Buttons are active-low
 #define BTN_RELEASED GPIO_PIN_SET
@@ -172,8 +172,8 @@ struct ButtonState {
 
 struct ButtonState buttonState[3] = {0};
 
-char alphabet[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'w', 'x', 'y', 'z',
-				   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'W', 'X', 'Y', 'Z',
+char alphabet[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+				   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 				   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '=', '_', '+',
 				   '.', 0x00};
 
@@ -957,19 +957,50 @@ void sanitizeLineOfText(char *textToSanitize, int length) {
 	}
 }
 
+static inline uint32_t mix32(uint32_t x) {
+    // tani mixer (wariant splitmix / avalanching)
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
+    return x;
+}
+
+static inline uint8_t rand_unbiased(uint8_t n) {
+    // zwraca równomiernie 0..n-1
+    // RAND_MAX zwykle 32767, ale nie zakładamy nic poza >= 255
+    uint32_t r;
+    uint32_t limit = (RAND_MAX / n) * n;
+    do { r = (uint32_t)rand(); } while (r >= limit);
+    return (uint8_t)(r % n);
+}
+
 void randomizePassword(char *passwordBuffer, int length) {
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	uint16_t rawADC = HAL_ADC_GetValue(&hadc1);
 
-	for (int i = 0; i < length; i++) {
+    // Zbierz trochę entropii: tick + kilka odczytów ADC + Twoje randomSeed
+    uint32_t seed = HAL_GetTick();
 
-		randomSeed[(i * 4) + (currentSeedPart % 4)] ^= (uint8_t)(rawADC & 0xFF);
-		uint32_t *currentSeed = (uint32_t *)&randomSeed[(i * 4)];
-		srand(*currentSeed);
+    for (int k = 0; k < 8; k++) {
+        HAL_ADC_Start(&hadc1);
+        HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+        uint16_t rawADC = HAL_ADC_GetValue(&hadc1);
+        seed ^= ((uint32_t)rawADC << ((k & 3) * 8));
+        seed = mix32(seed);
+    }
 
-		passwordBuffer[i] = alphabet[rand() % (sizeof(alphabet)-1)];
-	}
+    // wmieszaj fragment Twojego randomSeed (który już mieszasz tickiem i przyciskami)
+    for (int i = 0; i < 16; i++) {
+        seed ^= ((uint32_t)randomSeed[(currentSeedPart + i) % (MAX_LINE_OF_TEXT_CHARS * 4)] << ((i & 3) * 8));
+        seed = mix32(seed);
+    }
+
+    srand(seed);
+
+    uint8_t alpha_len = (uint8_t)(sizeof(alphabet) - 1); // bez 0x00
+    for (int i = 0; i < length; i++) {
+        passwordBuffer[i] = alphabet[rand_unbiased(alpha_len)];
+    }
 }
 
 /* USER CODE END 0 */
@@ -1506,7 +1537,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 		uint32_t lastTick = HAL_GetTick();
 		randomSeed[currentSeedPart] ^= (uint8_t)(lastTick & 0xFF);
-		if (++currentSeedPart>(MAX_LINE_OF_TEXT_CHARS * 4)) currentSeedPart=0;
+		if (++currentSeedPart>=(MAX_LINE_OF_TEXT_CHARS * 4)) currentSeedPart=0;
 
 		if (lcdDimCounter > 0) {
 			if ((--lcdDimCounter == 0) && !(lcdBrightnessStatus & LCD_BRIGHTNESS_IS_DIM)) lcdBrightnessStatus |= LCD_BRIGHTNESS_GO_DIM;
@@ -1521,7 +1552,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	//HAL_NVIC_DisableIRQ(EXTI1_IRQn);
-	if (++currentSeedPart>(MAX_LINE_OF_TEXT_CHARS * 4)) currentSeedPart=0;
+	if (++currentSeedPart>=(MAX_LINE_OF_TEXT_CHARS * 4)) currentSeedPart=0;
 
 	lcdDimCounter = LCD_DIM_COUNTER_START;
 

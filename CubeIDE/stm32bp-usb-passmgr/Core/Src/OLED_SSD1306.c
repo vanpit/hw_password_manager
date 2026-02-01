@@ -113,7 +113,7 @@ void SSD1306_SetContrast(uint8_t Contrast)
 //
 // Graphic Acceleration Command
 //
-void SSD1306_StartScrollRight(uint8_t StartPage, uint8_t EndPage, uint8_t Speed)
+void SSD1306_StartScrollRight(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed Speed)
 {
 	SSD1306_Command(SSD1306_RIGHT_HORIZONTAL_SCROLL);
 	SSD1306_Command(0x00);
@@ -123,7 +123,7 @@ void SSD1306_StartScrollRight(uint8_t StartPage, uint8_t EndPage, uint8_t Speed)
 	SSD1306_Command(SSD1306_ACTIVATE_SCROLL);
 }
 
-void SSD1306_StartScrollLeft(uint8_t StartPage, uint8_t EndPage, uint8_t Speed)
+void SSD1306_StartScrollLeft(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed Speed)
 {
 	SSD1306_Command(SSD1306_LEFT_HORIZONTAL_SCROLL);
 	SSD1306_Command(0x00);
@@ -145,12 +145,12 @@ void SSD1306_ScrollingHorVer(uint8_t Direction, uint8_t StartPage, uint8_t EndPa
 	SSD1306_Command(SSD1306_ACTIVATE_SCROLL);
 }
 
-void SSD1306_StartScrollLeftUp(uint8_t StartPage, uint8_t EndPage, uint8_t HorizontalSpeed, uint8_t VerticalOffset)
+void SSD1306_StartScrollLeftUp(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset)
 {
 	SSD1306_ScrollingHorVer(SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL, StartPage, EndPage, HorizontalSpeed, VerticalOffset);
 }
 
-void SSD1306_StartScrollRightUp(uint8_t StartPage, uint8_t EndPage, uint8_t HorizontalSpeed, uint8_t VerticalOffset)
+void SSD1306_StartScrollRightUp(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset)
 {
 	SSD1306_ScrollingHorVer(SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL, StartPage, EndPage, HorizontalSpeed, VerticalOffset);
 }

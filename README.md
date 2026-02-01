@@ -30,6 +30,8 @@ W edycji/wpisywaniu PINu:
 
 Płytka ewaluacyjna  STM32F411 Black Pill
 
+Wyświetlacz OLED SSD 1306
+
 Mikroprzełączniki o oznaczeniu w TME B3U-1000PM
 
 Kondensatory ceramiczne 0805 100nF
