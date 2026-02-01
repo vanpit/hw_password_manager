@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include "keystructures.h"
 
+#define ARRAY_LEN(a) (sizeof(a) / sizeof((a)[0]))
+
 static ConversionTableEntry conversionTable[] = {
 		{0x00, {0, 0, {0, 0, 0, 0, 0, 0}}},
 		{0xFF, {0, 0, {0, 0, 0, 0, 0, 0}}},
@@ -95,7 +97,7 @@ static ConversionTableEntry conversionTable[] = {
 
 uint8_t* GetReportByChar(char chr)
 {
-	for (int i = 0; i< sizeof(conversionTable); i++) {
+	for (int i = 0; i < (int)ARRAY_LEN(conversionTable); i++) {
 		if (conversionTable[i].letter == chr) return (uint8_t*)&(conversionTable[i].report);
 	}
 	return (uint8_t*)&(conversionTable[0].report);
